@@ -1,0 +1,23 @@
+{
+  "name": "europe-map-studio",
+  "version": "1.0.0",
+  "description": "Local dashboard for choropleth maps of Europe with CSV import and SVG export",
+  "scripts": {
+    "dev": "vite --open",
+    "build": "vite build",
+    "preview": "vite preview --open",
+    "build:geo": "node scripts/build-geo.mjs"
+  },
+  "dependencies": {
+    "d3": "^7.9.0",
+    "papaparse": "^5.7.0",
+    "topojson-client": "^3.1.0"
+  },
+  "devDependencies": {
+    "topojson-server": "^3.0.1",
+    "topojson-simplify": "^3.0.3",
+    "vite": "^8.3.2"
+  },
+  "private": true,
+  "type": "module"
+}

@@ -1,0 +1,205 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Europe Map Studio</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232563eb'/%3E%3Cpath d='M8 21l5-9 4 6 3-4 4 7z' fill='white'/%3E%3C/svg%3E" />
+  </head>
+  <body>
+    <aside id="sidebar">
+      <header class="brand">
+        <div class="logo"></div>
+        <div>
+          <h1>Europe Map Studio</h1>
+          <p class="muted">Choropleth maps from your data</p>
+        </div>
+      </header>
+
+      <!-- DATA -->
+      <details class="section" open>
+        <summary>Data</summary>
+        <div class="body">
+          <label class="drop" id="drop">
+            <input type="file" id="csvFile" accept=".csv,.tsv,.txt,text/csv" hidden />
+            <strong>Upload CSV</strong>
+            <span class="muted">or drop a file here · country name/code + value columns</span>
+          </label>
+          <div class="row gap">
+            <button id="loadSample" class="ghost">Load sample data</button>
+            <button id="clearData" class="ghost danger">Clear all data</button>
+          </div>
+
+          <div id="datasetPanel" hidden>
+            <div class="file-line"><span id="datasetName"></span><button id="removeDataset" class="link">remove</button></div>
+            <div class="grid2">
+              <label>Country column<select id="nameCol"></select></label>
+              <label>Value column<select id="valueCol"></select></label>
+            </div>
+            <div id="matchSummary" class="summary"></div>
+            <div id="matchList" class="match-list"></div>
+          </div>
+
+          <h3>Countries</h3>
+          <div class="row gap">
+            <input type="search" id="countrySearch" placeholder="Search countries…" />
+            <label class="check"><input type="checkbox" id="onlyWithData" /> with data</label>
+          </div>
+          <div id="countryList" class="country-list"></div>
+        </div>
+      </details>
+
+      <!-- COLORS -->
+      <details class="section" open>
+        <summary>Colors &amp; legend</summary>
+        <div class="body">
+          <label>Preset
+            <select id="preset"><option value="">Choose a preset…</option></select>
+          </label>
+          <div class="grad-wrap">
+            <div id="gradBar" class="grad-bar" title="Click to add a color, drag handles to move"></div>
+            <div id="gradHandles" class="grad-handles"></div>
+          </div>
+          <div id="stopList" class="stop-list"></div>
+          <div class="row gap">
+            <button id="addStop">+ Add color</button>
+            <button id="reverseStops" class="ghost">Reverse</button>
+            <button id="evenStops" class="ghost">Space evenly</button>
+          </div>
+
+          <div class="grid2">
+            <label>Scale
+              <select id="scaleMode">
+                <option value="continuous">Continuous</option>
+                <option value="equal">Classes · equal interval</option>
+                <option value="quantile">Classes · quantile</option>
+              </select>
+            </label>
+            <label id="classesWrap">Classes<input type="number" id="classes" min="2" max="12" /></label>
+          </div>
+          <label class="check"><input type="checkbox" id="domainAuto" /> Range from data</label>
+          <label class="check" id="niceWrap"><input type="checkbox" id="nice" /> Round range to nice numbers</label>
+          <div class="grid2" id="domainManual">
+            <label>Min<input type="number" id="dMin" step="any" /></label>
+            <label>Max<input type="number" id="dMax" step="any" /></label>
+          </div>
+
+          <h3>Legend</h3>
+          <label>Legend title<input type="text" id="legendTitle" placeholder="e.g. GDP per capita" /></label>
+          <div class="grid3">
+            <label>Prefix<input type="text" id="prefix" placeholder="€" /></label>
+            <label>Suffix<input type="text" id="suffix" placeholder="%" /></label>
+            <label>Decimals<input type="number" id="decimals" min="0" max="6" /></label>
+          </div>
+          <div class="grid2">
+            <label>Position
+              <select id="legendPos">
+                <option value="bl">Bottom left</option>
+                <option value="tl">Top left</option>
+                <option value="tr">Top right</option>
+                <option value="br">Bottom right</option>
+                <option value="none">Hidden</option>
+              </select>
+            </label>
+            <label class="check pad-top"><input type="checkbox" id="showNoData" /> “No data” swatch</label>
+          </div>
+        </div>
+      </details>
+
+      <!-- MAP STYLE -->
+      <details class="section">
+        <summary>Map style</summary>
+        <div class="body">
+          <div class="grid3 colors">
+            <label>No data<input type="color" id="noData" /></label>
+            <label>Borders<input type="color" id="border" /></label>
+            <label>Sea<input type="color" id="sea" /></label>
+          </div>
+          <label>Border width <span id="bwOut" class="muted"></span><input type="range" id="borderWidth" min="0" max="3" step="0.1" /></label>
+          <div class="grid2">
+            <label>Labels
+              <select id="labelMode">
+                <option value="none">None</option>
+                <option value="name">Names</option>
+                <option value="value">Values</option>
+                <option value="both">Name + value</option>
+              </select>
+            </label>
+            <label>Label size<input type="number" id="labelSize" min="6" max="24" /></label>
+          </div>
+        </div>
+      </details>
+
+      <!-- EXPORT -->
+      <details class="section" open>
+        <summary>Export &amp; download</summary>
+        <div class="body">
+          <label>Title<input type="text" id="exTitle" placeholder="Map title" /></label>
+          <label>Subtitle<input type="text" id="exSubtitle" placeholder="Optional" /></label>
+          <label>Source / footnote<input type="text" id="exSource" placeholder="Source: Eurostat, 2025" /></label>
+          <div class="grid2">
+            <label>Width (px)<input type="number" id="exWidth" min="300" max="8000" step="10" /></label>
+            <label>Height (px)<input type="number" id="exHeight" min="300" max="8000" step="10" /></label>
+          </div>
+          <div class="grid2">
+            <label>Area
+              <select id="exView">
+                <option value="full">Whole Europe</option>
+                <option value="current">Current zoom</option>
+              </select>
+            </label>
+            <label>Background
+              <select id="exBg">
+                <option value="sea">Sea color</option>
+                <option value="white">White</option>
+                <option value="none">Transparent</option>
+              </select>
+            </label>
+          </div>
+          <label class="check"><input type="checkbox" id="exLegend" /> Include legend</label>
+          <label>File name<input type="text" id="exFile" /></label>
+          <div class="row gap">
+            <button id="dlSvg" class="primary">Download SVG</button>
+            <button id="dlPng" class="ghost">PNG</button>
+          </div>
+          <p class="muted small">SVG keeps vector shapes, so it stays sharp at any size and can be edited in Illustrator, Inkscape or Figma.</p>
+        </div>
+      </details>
+
+      <footer class="muted small">
+        Borders: Natural Earth 1:10m admin-0 v5.1+ (EU point of view: Kosovo, undivided Cyprus, Crimea in Ukraine).
+        <button id="resetAll" class="link">Reset all settings</button>
+      </footer>
+    </aside>
+
+    <main id="main">
+      <div class="topbar">
+        <div>
+          <h2 id="mapTitle"></h2>
+          <p id="mapSubtitle" class="muted"></p>
+        </div>
+        <div class="stats" id="stats"></div>
+      </div>
+      <div id="mapWrap">
+        <svg id="map" role="img" aria-label="Map of Europe"></svg>
+        <div class="zoom">
+          <button id="zoomIn" title="Zoom in">+</button>
+          <button id="zoomOut" title="Zoom out">−</button>
+          <button id="zoomReset" title="Reset view">⟲</button>
+        </div>
+        <div id="tooltip" class="tooltip" hidden></div>
+        <form id="editor" class="editor" hidden>
+          <div class="editor-head"><strong id="edName"></strong><button type="button" id="edClose" class="link">✕</button></div>
+          <input type="text" inputmode="decimal" id="edValue" placeholder="Enter value" autocomplete="off" />
+          <div class="row gap">
+            <button type="submit" class="primary">Save</button>
+            <button type="button" id="edClear" class="ghost">Clear</button>
+          </div>
+        </form>
+        <div id="dropOverlay" class="drop-overlay" hidden>Drop CSV to import</div>
+      </div>
+      <p class="hint muted small">Click a country to enter its value · scroll to zoom · drag to pan</p>
+    </main>
+    <script type="module" src="/src/main.js"></script>
+  </body>
+</html>
