@@ -35,7 +35,7 @@ Everything (map data included) is bundled, so it runs offline.
   hex values, reverse or space them evenly. Choose a continuous scale or classes
   (equal interval / quantile), fixed or data-driven range, legend title, unit prefix/suffix
   and decimals.
-- **Export & download**: title, subtitle, source line, pixel size, whole Europe or current zoom,
+- **Export & download**: pixel size, whole Europe or current zoom,
   background, legend on/off, file name → **Download SVG** (vector, editable in Illustrator,
   Inkscape or Figma) or PNG.
 

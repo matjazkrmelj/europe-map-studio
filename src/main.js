@@ -26,7 +26,7 @@ const defaults = () => ({
   legend: { title: '', prefix: '', suffix: '', decimals: 1, position: 'bl', showNoData: true },
   style: { noData: '#d9dde3', border: '#ffffff', sea: '#eef4fa', borderWidth: 0.7 },
   labels: { mode: 'none', size: 10 },
-  ex: { title: '', subtitle: '', source: '', width: 1600, height: 1200, view: 'full', background: 'sea', legend: true, file: 'europe-map' },
+  ex: { width: 1600, height: 1200, view: 'full', background: 'sea', legend: true, file: 'europe-map' },
 });
 
 function load() {
@@ -143,8 +143,6 @@ function renderMap() {
   }
   renderStats(f);
   updateCountrySwatches(scale);
-  $('mapTitle').textContent = state.ex.title;
-  $('mapSubtitle').textContent = state.ex.subtitle;
 }
 
 function renderStats(f) {
@@ -638,7 +636,6 @@ const BINDINGS = [
   ['decimals', 'legend.decimals', 'num'], ['legendPos', 'legend.position'], ['showNoData', 'legend.showNoData', 'bool'],
   ['noData', 'style.noData'], ['border', 'style.border'], ['sea', 'style.sea'], ['borderWidth', 'style.borderWidth', 'num'],
   ['labelMode', 'labels.mode'], ['labelSize', 'labels.size', 'num'],
-  ['exTitle', 'ex.title'], ['exSubtitle', 'ex.subtitle'], ['exSource', 'ex.source'],
   ['exWidth', 'ex.width', 'num'], ['exHeight', 'ex.height', 'num'], ['exView', 'ex.view'], ['exBg', 'ex.background'],
   ['exLegend', 'ex.legend', 'bool'], ['exFile', 'ex.file'],
 ];

@@ -22,30 +22,8 @@ export function buildSvg({ features, values, scale, stops, style, fmt, legend, l
   const bg = ex.background === 'white' ? '#ffffff' : ex.background === 'none' ? null : style.sea;
   if (bg) svg.append('rect').attr('width', W).attr('height', H).attr('fill', bg);
 
-  // Header
-  let top = 0;
-  if (ex.title || ex.subtitle) {
-    const hg = svg.append('g').attr('id', 'title');
-    top = margin;
-    if (ex.title) {
-      top += 34 * s;
-      hg.append('text').attr('x', margin).attr('y', top).attr('font-size', 34 * s).attr('font-weight', 700).attr('fill', style.text).text(ex.title);
-    }
-    if (ex.subtitle) {
-      top += 26 * s;
-      hg.append('text').attr('x', margin).attr('y', top).attr('font-size', 19 * s).attr('fill', style.muted).text(ex.subtitle);
-    }
-    top += 14 * s;
-  }
-  let bottom = H;
-  if (ex.source) {
-    bottom = H - margin - 14 * s;
-    svg.append('text').attr('id', 'source').attr('x', margin).attr('y', H - margin).attr('font-size', 14 * s)
-      .attr('fill', style.muted).text(ex.source);
-  }
-
   // Map area
-  const mx = 0, my = top, mw = W, mh = bottom - top;
+  const mx = 0, my = 0, mw = W, mh = H;
   let projection = makeProjection();
   if (view && ex.view === 'current') {
     // Visible rectangle of the on-screen map in un-zoomed projected coordinates, fitted into the export area.
