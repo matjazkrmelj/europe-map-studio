@@ -52,7 +52,8 @@ Settings and data are saved in the browser (localStorage), so they survive a rel
   contains several votes, pick one from the list. Counts come from the member names listed
   under each group, and a badge shows whether they match the totals stated in the file.
 - **Groups & labels**: drag groups (or use the arrows) to change their order, and edit the
-  abbreviation in the middle circle and the label under the bars. Non-attached members (NI)
+  label under the bars. Each group's logo (`src/votes/logos/`) sits between its bars; a group
+  without a logo gets a coloured circle with an editable abbreviation. Non-attached members (NI)
   are listed in the table but not drawn.
 - **Bar colours**: pick colours for the For bars, Against bars and labels, or use a preset.
 - **Numbers by political group**: every number can be typed in by hand. "Restore file numbers"

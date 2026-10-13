@@ -1,6 +1,22 @@
 import '../style.css';
 import './votes.css';
 import { download } from '../export.js';
+import renewLogo from './logos/renew.svg?raw';
+import sdLogo from './logos/sd.svg?raw';
+import greensLogo from './logos/greens.svg?raw';
+import leftLogo from './logos/left.svg?raw';
+import eppLogo from './logos/epp.svg?raw';
+import ecrLogo from './logos/ecr.svg?raw';
+import pfeLogo from './logos/pfe.svg?raw';
+import esnLogo from './logos/esn.svg?raw';
+
+// Group logos (80.12 × 80.12 circles). A group without a logo falls back to a coloured
+// circle with its editable abbreviation.
+const LOGO_SVG = {
+  "Renew": renewLogo, "S&D": sdLogo, "Verts/ALE": greensLogo, "The Left": leftLogo,
+  "PPE": eppLogo, "ECR": ecrLogo, "PfE": pfeLogo, "ESN": esnLogo,
+};
+const LOGO_INNER = Object.fromEntries(Object.entries(LOGO_SVG).map(([id, svg]) => [id, svg.replace(/^[\s\S]*?<svg[^>]*>/, "").replace(/<\/svg>\s*$/, "")]));
 
 // ---------- Groups, in the order of the reference graphic ----------
 const GROUPS = [
@@ -190,7 +206,10 @@ function buildSVG(v, withGap) {
     const top = PAD + i * ROW, cy = top + BAR_H / 2 + 7, ly = top + LABEL_DY;
     const label = esc(labels[r.id] ?? r.id);
     out.push(`<g id="${esc(r.id.replace(/[^A-Za-z0-9]+/g, "-"))}">`);
-    if (withGap) {
+    if (withGap && LOGO_INNER[r.id]) {
+      const cx = W / 2 - 3, ccy = top + BAR_H / 2;
+      out.push(`<g transform="translate(${cx - 40} ${ccy - 40}) scale(${(80 / 80.12).toFixed(5)})">${LOGO_INNER[r.id]}</g>`);
+    } else if (withGap) {
       const ab = String(settings.abbr[r.id] ?? r.id);
       const fs = ab.length <= 3 ? 26 : ab.length <= 5 ? 20 : ab.length <= 7 ? 15 : 12;
       out.push(`<circle cx="${W / 2 - 3}" cy="${top + BAR_H / 2}" r="40" fill="${(GROUP_BY_ID[r.id] || {}).color || "#5B6878"}"/>`);
@@ -266,10 +285,17 @@ function renderLabels() {
     row.className = "lrow"; row.draggable = true; row.dataset.id = id;
     const grip = document.createElement("span"); grip.className = "grip"; grip.title = "Drag to reorder";
     grip.innerHTML = '<svg width="10" height="16" viewBox="0 0 10 16" aria-hidden="true"><g fill="currentColor"><circle cx="2" cy="3" r="1.5"/><circle cx="8" cy="3" r="1.5"/><circle cx="2" cy="8" r="1.5"/><circle cx="8" cy="8" r="1.5"/><circle cx="2" cy="13" r="1.5"/><circle cx="8" cy="13" r="1.5"/></g></svg>';
-    const ab = document.createElement("input");
+    let ab;
+    if (LOGO_SVG[id]) {
+      ab = document.createElement("img");
+      ab.className = "logo-thumb"; ab.alt = id + " logo";
+      ab.src = "data:image/svg+xml;charset=utf-8," + encodeURIComponent(LOGO_SVG[id]);
+    } else {
+    ab = document.createElement("input");
     ab.type = "text"; ab.className = "abbr"; ab.id = "abbr-" + slug; ab.value = settings.abbr[id] ?? id;
     ab.setAttribute("aria-label", id + " abbreviation");
     ab.addEventListener("input", () => { settings.abbr[id] = ab.value; saveLabels(); renderChart(); });
+    }
     const inp = document.createElement("input");
     inp.type = "text"; inp.className = "lab"; inp.id = "lab-" + slug; inp.value = labels[id] ?? id;
     inp.setAttribute("aria-label", id + " label");

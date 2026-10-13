@@ -21,6 +21,7 @@
 .lrow.over-bottom { box-shadow: 0 2px 0 var(--accent); }
 .grip { cursor: grab; color: var(--muted); display: grid; place-items: center; }
 .grip:active { cursor: grabbing; }
+.lrow .logo-thumb { width: 32px; height: 32px; justify-self: center; display: block; }
 .lrow input.abbr { font-weight: 600; padding: 6px; text-align: center; }
 .lrow input.lab { padding: 6px 8px; }
 .mv { display: grid; gap: 2px; }
