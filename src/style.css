@@ -25,6 +25,12 @@ body { display: grid; grid-template-columns: 370px 1fr; background: var(--bg); o
 .brand p { margin: 2px 0 0; font-size: 12px; }
 .logo { width: 34px; height: 34px; border-radius: 9px; background: linear-gradient(135deg, #93c5fd, #2563eb 60%, #1e3a8a); flex: none; }
 
+/* Switcher between infographic tools (one page per tool). */
+.app-tabs { display: flex; gap: 4px; padding: 10px 14px; border-bottom: 1px solid var(--line); background: #fafbfd; }
+.app-tabs a { flex: 1; text-align: center; padding: 7px 10px; border-radius: 6px; font-weight: 600; font-size: 13px; color: var(--muted); text-decoration: none; }
+.app-tabs a:hover { background: var(--line); color: var(--text); }
+.app-tabs a[aria-current="page"] { background: var(--panel); color: var(--accent); box-shadow: 0 0 0 1px var(--line), 0 1px 2px rgba(0,0,0,.06); }
+
 .section { border-bottom: 1px solid var(--line); }
 .section > summary { cursor: pointer; padding: 13px 18px; font-weight: 600; list-style: none; display: flex; justify-content: space-between; user-select: none; }
 .section > summary::after { content: '▸'; color: var(--muted); transition: transform .15s; }
