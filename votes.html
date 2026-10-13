@@ -5,8 +5,6 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Voting results · Infographic Studio</title>
     <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232563eb'/%3E%3Cpath d='M8 21l5-9 4 6 3-4 4 7z' fill='white'/%3E%3C/svg%3E" />
-    <link rel="preconnect" href="https://fonts.googleapis.com" />
-    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" />
   </head>
   <body class="votes-page">
     <aside id="sidebar">
@@ -57,6 +55,19 @@
         </div>
       </details>
 
+      <!-- FONTS -->
+      <details class="section" open>
+        <summary>Fonts</summary>
+        <div class="body">
+          <div id="fontStatus" class="font-status"></div>
+          <label class="drop small-drop">
+            <input type="file" id="fontFiles" accept=".ttf,.otf,.woff,.woff2" multiple hidden />
+            <strong>Load font files</strong>
+            <span class="muted">Only needed if Gilroy isn't installed on this computer. Kept in this browser, never uploaded.</span>
+          </label>
+        </div>
+      </details>
+
       <footer class="muted small">
         Non-attached members (NI) and abstentions are not drawn as bars. Order, labels and colours are saved in this browser.
       </footer>
@@ -82,7 +93,7 @@
         <div class="card-head">
           <div>
             <h3>Bars for export</h3>
-            <p>1080 px wide, transparent background, live Poppins text</p>
+            <p>1080 px wide, transparent background, live Gilroy text</p>
           </div>
           <div class="row gap">
             <button type="button" id="copy">Copy SVG code</button>

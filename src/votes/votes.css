@@ -4,7 +4,7 @@
   --sunken: #f8fafc;
   --ok-soft: #e7f6ec;
   --warn-soft: #fff4e0;
-  --canvas: #fbeef2; /* preview ground: the exported bars sit on a light post background */
+  --canvas: #ffffff; /* the export is transparent; previewed on white */
   --shadow: 0 1px 2px rgba(16, 24, 40, .04), 0 4px 16px rgba(16, 24, 40, .05);
 }
 .votes-page #main { overflow-y: auto; gap: 20px; padding: 20px 24px 40px; }
@@ -61,7 +61,7 @@
 .card-head h3 { font-size: 15px; font-weight: 700; margin: 0; text-transform: none; letter-spacing: 0; color: var(--text); }
 .card-head p { font-size: 12px; color: var(--muted); margin: 2px 0 0; }
 .card-body { padding: 18px; }
-.stage { background: var(--canvas); border-radius: 10px; padding: 20px; overflow-x: auto; }
+.stage { background: var(--canvas); border: 1px solid var(--line); border-radius: 10px; padding: 20px; overflow-x: auto; }
 .stage svg { display: block; width: 100%; height: auto; min-width: 520px; max-width: 1080px; margin: 0 auto; }
 .v-toast { font-size: 13px; min-height: 1.5em; margin: 12px 0 0; color: var(--muted); }
 .v-toast.err { color: var(--warn); }
@@ -79,3 +79,7 @@ td input.num.changed { border-color: var(--warn); background: var(--warn-soft); 
 .split i { display: block; height: 100%; }
 .gname b { font-weight: 600; }
 .gname small { color: var(--muted); margin-left: 6px; }
+
+.font-status { display: grid; gap: 6px; }
+.font-row { display: flex; justify-content: space-between; align-items: center; gap: 8px; font-size: 13px; }
+.small-drop { padding: 12px; }

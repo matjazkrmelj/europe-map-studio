@@ -57,8 +57,12 @@ Settings and data are saved in the browser (localStorage), so they survive a rel
 - **Bar colours**: pick colours for the For bars, Against bars and labels, or use a preset.
 - **Numbers by political group**: every number can be typed in by hand. "Restore file numbers"
   undoes edits; "New blank vote" starts a vote from zero without a file.
-- **Download SVG**: a 1080 px wide graphic with a transparent background and live text in
-  Poppins, ready to drop into a social post template.
+- **Download SVG**: a 1080 px wide graphic with a transparent background and live text, ready
+  to drop into a social post template. Labels use Gilroy Light and numbers Gilroy ExtraBold.
+- **Fonts**: Gilroy is a licensed font and is not included in this repository. The page uses
+  the copy installed on your computer; if it isn't installed, load the font files in the
+  **Fonts** section (they stay in your browser). Design tools render the exported text in
+  Gilroy wherever it is installed.
 
 ## Adding another infographic
 

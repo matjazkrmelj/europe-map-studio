@@ -92,6 +92,75 @@ function parseXML(text) {
   });
 }
 
+// ---------- Fonts ----------
+// Gilroy is a licensed font, so it is not bundled: the page uses the copy installed on this
+// computer, or font files the user loads (kept in this browser only). The exported SVG names the
+// fonts, so design tools render them wherever Gilroy is installed.
+const LABEL_FONT = "Gilroy-Light, 'Gilroy Light', Arial, sans-serif";
+const NUM_FONT = "Gilroy-ExtraBold, 'Gilroy ExtraBold', 'Arial Black', Arial, sans-serif";
+const FONTS = [
+  { key: "light", family: "Gilroy-Light", label: "Gilroy Light", use: "labels", local: ["Gilroy-Light", "Gilroy Light"], match: /light/i },
+  { key: "xbold", family: "Gilroy-ExtraBold", label: "Gilroy ExtraBold", use: "numbers", local: ["Gilroy-ExtraBold", "Gilroy ExtraBold", "Gilroy Extra Bold"], match: /extra.?bold|xbold|black|heavy/i },
+];
+const fontState = {};   // key -> "installed" | "loaded" | "missing"
+
+function idb() {
+  return new Promise((res, rej) => {
+    const r = indexedDB.open("infographic-fonts", 1);
+    r.onupgradeneeded = () => r.result.createObjectStore("fonts");
+    r.onsuccess = () => res(r.result); r.onerror = () => rej(r.error);
+  });
+}
+async function idbOp(mode, fn) {
+  const db = await idb();
+  return new Promise((res, rej) => {
+    const tx = db.transaction("fonts", mode); const req = fn(tx.objectStore("fonts"));
+    tx.oncomplete = () => res(req && req.result); tx.onerror = () => rej(tx.error);
+  });
+}
+async function addFace(f, source) {
+  const face = new FontFace(f.family, source);
+  await face.load();
+  document.fonts.add(face);
+}
+async function initFonts() {
+  for (const f of FONTS) {
+    try { await addFace(f, f.local.map(n => `local("${n}")`).join(", ")); fontState[f.key] = "installed"; continue; } catch {}
+    try {
+      const buf = await idbOp("readonly", st => st.get(f.key));
+      if (buf) { await addFace(f, buf); fontState[f.key] = "loaded"; continue; }
+    } catch {}
+    fontState[f.key] = "missing";
+  }
+  renderFontStatus(); renderChart();
+}
+async function loadFontFiles(files) {
+  const done = [];
+  for (const file of files) {
+    const f = FONTS.find(x => x.match.test(file.name));
+    if (!f) { setToast(`Couldn't tell which font ${file.name} is. Use files named like Gilroy-Light.ttf and Gilroy-ExtraBold.ttf.`, true); continue; }
+    const buf = await file.arrayBuffer();
+    try { await addFace(f, buf.slice(0)); } catch { setToast(`${file.name} isn't a font file this browser can read.`, true); continue; }
+    try { await idbOp("readwrite", st => st.put(buf, f.key)); } catch {}
+    fontState[f.key] = "loaded"; done.push(f.label);
+  }
+  renderFontStatus(); renderChart();
+  if (done.length) setToast(`Loaded ${done.join(" and ")} for this browser.`);
+}
+function renderFontStatus() {
+  const box = $("fontStatus"); if (!box) return;
+  box.innerHTML = "";
+  FONTS.forEach(f => {
+    const st = fontState[f.key];
+    const row = document.createElement("div"); row.className = "font-row";
+    const name = document.createElement("span"); name.textContent = `${f.label} · ${f.use}`;
+    const pill = document.createElement("span");
+    pill.className = "pill " + (st === "missing" ? "warn" : "ok");
+    pill.textContent = st === "installed" ? "installed" : st === "loaded" ? "loaded" : st === "missing" ? "not found" : "checking…";
+    row.append(name, pill); box.appendChild(row);
+  });
+}
+
 // ---------- Chart geometry (px, matches the 1080-wide reference) ----------
 const W = 1080, ROW = 92, BAR_H = 42, R = 10, MAX_LEN = 417, LABEL_DY = 70;
 const esc = s => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
@@ -116,7 +185,7 @@ function buildSVG(v, withGap) {
   const yesC = settings.colors.yes, noC = settings.colors.no, ink = settings.colors.ink;
   const onYes = textOn(yesC), onNo = textOn(noC);
   const out = [];
-  out.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" font-family="Poppins, Arial, sans-serif">`);
+  out.push(`<svg xmlns="http://www.w3.org/2000/svg" width="${W}" height="${H}" viewBox="0 0 ${W} ${H}" >`);
   rows.forEach((r, i) => {
     const top = PAD + i * ROW, cy = top + BAR_H / 2 + 7, ly = top + LABEL_DY;
     const label = esc(labels[r.id] ?? r.id);
@@ -125,25 +194,25 @@ function buildSVG(v, withGap) {
       const ab = String(settings.abbr[r.id] ?? r.id);
       const fs = ab.length <= 3 ? 26 : ab.length <= 5 ? 20 : ab.length <= 7 ? 15 : 12;
       out.push(`<circle cx="${W / 2 - 3}" cy="${top + BAR_H / 2}" r="40" fill="${(GROUP_BY_ID[r.id] || {}).color || "#5B6878"}"/>`);
-      out.push(`<text x="${W / 2 - 3}" y="${top + BAR_H / 2 + fs * 0.36}" font-size="${fs}" font-weight="700" fill="#FFFFFF" text-anchor="middle">${esc(ab)}</text>`);
+      out.push(`<text x="${W / 2 - 3}" y="${top + BAR_H / 2 + fs * 0.36}" font-size="${fs}" font-family="${NUM_FONT}" fill="#FFFFFF" text-anchor="middle">${esc(ab)}</text>`);
     }
     if (r.yes) {
       const w = Math.max(6, r.yes * k), x = yesRight - w;
       out.push(`<rect x="${x.toFixed(1)}" y="${top}" width="${w.toFixed(1)}" height="${BAR_H}" rx="${Math.min(R, w / 2).toFixed(1)}" fill="${yesC}"/>`);
       const inside = w >= numW(r.yes) + 30;
       out.push(inside
-        ? `<text x="${(x + 12).toFixed(1)}" y="${cy}" font-size="20" font-weight="700" fill="${onYes}">${r.yes}</text>`
-        : `<text x="${(x - 10).toFixed(1)}" y="${cy}" font-size="20" font-weight="700" fill="${ink}" text-anchor="end">${r.yes}</text>`);
-      out.push(`<text x="${yesRight}" y="${ly}" font-size="20" font-weight="400" fill="${ink}" text-anchor="end">${label}</text>`);
+        ? `<text x="${(x + 12).toFixed(1)}" y="${cy}" font-size="20" font-family="${NUM_FONT}" fill="${onYes}">${r.yes}</text>`
+        : `<text x="${(x - 10).toFixed(1)}" y="${cy}" font-size="20" font-family="${NUM_FONT}" fill="${ink}" text-anchor="end">${r.yes}</text>`);
+      out.push(`<text x="${yesRight}" y="${ly}" font-size="20" font-family="${LABEL_FONT}" fill="${ink}" text-anchor="end">${label}</text>`);
     }
     if (r.no) {
       const w = Math.max(6, r.no * k);
       out.push(`<rect x="${noLeft}" y="${top}" width="${w.toFixed(1)}" height="${BAR_H}" rx="${Math.min(R, w / 2).toFixed(1)}" fill="${noC}"/>`);
       const inside = w >= numW(r.no) + 30;
       out.push(inside
-        ? `<text x="${(noLeft + w - 12).toFixed(1)}" y="${cy}" font-size="20" font-weight="700" fill="${onNo}" text-anchor="end">${r.no}</text>`
-        : `<text x="${(noLeft + w + 10).toFixed(1)}" y="${cy}" font-size="20" font-weight="700" fill="${ink}">${r.no}</text>`);
-      out.push(`<text x="${noLeft}" y="${ly}" font-size="20" font-weight="400" fill="${ink}">${label}</text>`);
+        ? `<text x="${(noLeft + w - 12).toFixed(1)}" y="${cy}" font-size="20" font-family="${NUM_FONT}" fill="${onNo}" text-anchor="end">${r.no}</text>`
+        : `<text x="${(noLeft + w + 10).toFixed(1)}" y="${cy}" font-size="20" font-family="${NUM_FONT}" fill="${ink}">${r.no}</text>`);
+      out.push(`<text x="${noLeft}" y="${ly}" font-size="20" font-family="${LABEL_FONT}" fill="${ink}">${label}</text>`);
     }
     out.push(`</g>`);
   });
@@ -402,5 +471,8 @@ $("download").addEventListener("click", () => {
   setToast("Downloaded " + fileSlug() + ".");
 });
 
+$("fontFiles").addEventListener("change", e => { loadFontFiles([...e.target.files]); e.target.value = ""; });
+
 renderVoteList(); renderLabels(); renderColors(); renderChart();
+renderFontStatus(); initFonts();
 if (document.fonts) document.fonts.ready.then(() => renderChart());
