@@ -1,0 +1,119 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Voting results · Infographic Studio</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232563eb'/%3E%3Cpath d='M8 21l5-9 4 6 3-4 4 7z' fill='white'/%3E%3C/svg%3E" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;700&display=swap" />
+  </head>
+  <body class="votes-page">
+    <aside id="sidebar">
+      <header class="brand">
+        <div class="logo"></div>
+        <div>
+          <h1>Infographic Studio</h1>
+          <p class="muted">Voting results from EP roll-call files</p>
+        </div>
+      </header>
+      <nav class="app-tabs" aria-label="Infographics">
+        <a href="./">EU map</a>
+        <a href="./votes.html" aria-current="page">Voting results</a>
+      </nav>
+
+      <!-- FILE -->
+      <details class="section" open>
+        <summary>Roll-call file</summary>
+        <div class="body">
+          <label class="drop" id="drop" tabindex="0">
+            <input type="file" id="file" accept=".xml,text/xml,application/xml" hidden />
+            <strong>Upload RCV XML</strong>
+            <span class="muted">or drop a file here · PV-…-RCV_EN.xml</span>
+          </label>
+          <p class="file-line" id="fileName"></p>
+          <label>Vote in this file<select id="vote"></select></label>
+        </div>
+      </details>
+
+      <!-- GROUPS -->
+      <details class="section" open>
+        <summary>Groups &amp; labels</summary>
+        <div class="body">
+          <p class="muted small">Drag a group by its handle to change the order. Edit the abbreviation shown in the middle circle and the label under the bars.</p>
+          <div class="labels" id="labels"></div>
+          <label class="check"><input type="checkbox" id="gap" checked /> Show abbreviation circles in the middle</label>
+          <div><button type="button" class="link" id="resetLabels">Reset order and labels</button></div>
+        </div>
+      </details>
+
+      <!-- COLOURS -->
+      <details class="section" open>
+        <summary>Bar colours</summary>
+        <div class="body">
+          <div class="colors" id="colors"></div>
+          <div class="swatches" id="presets"></div>
+          <p class="muted small">Numbers switch between black and white automatically so they stay readable on the bar.</p>
+        </div>
+      </details>
+
+      <footer class="muted small">
+        Non-attached members (NI) and abstentions are not drawn as bars. Order, labels and colours are saved in this browser.
+      </footer>
+    </aside>
+
+    <main id="main">
+      <div class="v-topbar">
+        <div>
+          <p class="crumbs" id="crumbs"></p>
+          <h2 id="voteTitle"></h2>
+        </div>
+        <div class="badges" id="badges"></div>
+      </div>
+
+      <section class="kpis" aria-label="Totals">
+        <div class="card kpi"><div class="ico yes">+</div><div><p class="lbl">For</p><p class="val" id="kFor"></p></div></div>
+        <div class="card kpi"><div class="ico no">−</div><div><p class="lbl">Against</p><p class="val" id="kAgainst"></p></div></div>
+        <div class="card kpi"><div class="ico abs">0</div><div><p class="lbl">Abstained</p><p class="val" id="kAbs"></p></div></div>
+        <div class="card kpi"><div class="ico grp">#</div><div><p class="lbl">Groups drawn</p><p class="val" id="kGroups"></p></div></div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h3>Bars for export</h3>
+            <p>1080 px wide, transparent background, live Poppins text</p>
+          </div>
+          <div class="row gap">
+            <button type="button" id="copy">Copy SVG code</button>
+            <button type="button" class="primary" id="download">Download SVG</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="stage" id="stage"></div>
+          <p class="v-toast" id="toast" role="status"></p>
+        </div>
+      </section>
+
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h3>Numbers by political group</h3>
+            <p>Counted from member names in the file. Type in any cell to change a number by hand.</p>
+          </div>
+          <div class="row gap">
+            <button type="button" id="restore" hidden>Restore file numbers</button>
+            <button type="button" id="blank">New blank vote</button>
+          </div>
+        </div>
+        <div class="tbl-wrap">
+          <table>
+            <thead><tr><th>Group</th><th>For</th><th>Against</th><th>Abstained</th><th>Split</th></tr></thead>
+            <tbody id="tbody"></tbody>
+          </table>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/src/votes/main.js"></script>
+  </body>
+</html>

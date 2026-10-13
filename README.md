@@ -1,7 +1,11 @@
 # Europe Map Studio
 
-A local dashboard for making choropleth maps of Europe: import a CSV (or type values in),
-pick a multi-color gradient, and download the map as SVG (or PNG).
+A small infographic studio. Tabs at the top of the sidebar switch between tools:
+
+- **EU map**: choropleth maps of Europe. Import a CSV (or type values in),
+  pick a multi-color gradient, and download the map as SVG (or PNG).
+- **Voting results**: European Parliament roll-call votes as For/Against bars per
+  political group, downloadable as SVG.
 
 ## Run it
 
@@ -42,6 +46,26 @@ Everything (map data included) is bundled, so it runs offline.
 Settings and data are saved in the browser (localStorage), so they survive a reload.
 “Reset all settings” at the bottom of the sidebar clears them.
 
+## Voting results
+
+- **Roll-call file**: upload the European Parliament roll-call XML (`PV-…-RCV_EN.xml`). If it
+  contains several votes, pick one from the list. Counts come from the member names listed
+  under each group, and a badge shows whether they match the totals stated in the file.
+- **Groups & labels**: drag groups (or use the arrows) to change their order, and edit the
+  abbreviation in the middle circle and the label under the bars. Non-attached members (NI)
+  are listed in the table but not drawn.
+- **Bar colours**: pick colours for the For bars, Against bars and labels, or use a preset.
+- **Numbers by political group**: every number can be typed in by hand. "Restore file numbers"
+  undoes edits; "New blank vote" starts a vote from zero without a file.
+- **Download SVG**: a 1080 px wide graphic with a transparent background and live text in
+  Poppins, ready to drop into a social post template.
+
+## Adding another infographic
+
+Each tool is its own page: add `newtool.html` next to `index.html`, its code under
+`src/newtool/`, list the page in `vite.config.js` (`build.rollupOptions.input`), and add a link
+to the `.app-tabs` nav in every page.
+
 ## Map data
 
 Borders come from [Natural Earth](https://www.naturalearthdata.com/) 1:10m admin-0
@@ -61,8 +85,10 @@ npm run build:geo
 ## Project layout
 
 ```
-index.html            sidebar + map layout
+index.html            EU map page: sidebar + map layout
+votes.html            Voting results page
 src/main.js           app state, UI wiring, CSV import, map interaction
+src/votes/            roll-call XML parsing, bar chart and SVG export
 src/matching.js       country-name matching and number parsing
 src/color.js          gradient presets and color scales
 src/render.js         map + legend drawing (shared by screen and export)
