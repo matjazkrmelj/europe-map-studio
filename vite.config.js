@@ -11,6 +11,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         main: resolve(import.meta.dirname, 'index.html'),
+        bars: resolve(import.meta.dirname, 'bars.html'),
         votes: resolve(import.meta.dirname, 'votes.html'),
       },
     },

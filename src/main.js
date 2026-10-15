@@ -3,7 +3,7 @@ import * as d3 from 'd3';
 import Papa from 'papaparse';
 import { feature } from 'topojson-client';
 import topo from './data/europe.topo.json';
-import { createMatcher, normalize, parseNumber } from './matching.js';
+import { createMatcher, normalize, parseNumber, euAggregateRank } from './matching.js';
 import { PRESETS, presetStops, sortStops, gradientAt, cssGradient, buildScale } from './color.js';
 import { makeProjection, EUROPE_FRAME, drawCountries, drawLegend, makeFormatter } from './render.js';
 import { buildSvg, download, svgToPng } from './export.js';
@@ -21,6 +21,7 @@ const defaults = () => ({
   values: {},
   dataset: null, // { fileName, columns, rows, nameCol, valueCol, overrides, applied }
   aliases: {}, // learned manual matches: normalized label -> id
+  eu: null, // EU average row found in the dataset: { label, value }; used by the bar chart tab
   stops: presetStops('Blues'),
   scale: { mode: 'continuous', classes: 5, domainAuto: true, nice: false, min: 0, max: 100 },
   legend: { title: '', prefix: '', suffix: '', decimals: 1, position: 'bl', showNoData: true },
@@ -338,6 +339,8 @@ function rowMatch(i) {
   const o = ds.overrides[i];
   if (o === '__ignore') return { id: null, method: 'ignored', suggestions: [] };
   if (o) return { id: o, method: 'manual', suggestions: [] };
+  const euRank = euAggregateRank(label);
+  if (euRank >= 0) return { id: null, method: 'eu', euRank, suggestions: [] };
   return matcher.match(label, state.aliases);
 }
 
@@ -358,10 +361,12 @@ function applyDataset() {
     return { ...m, value, label: r[ds.nameCol] };
   });
   ds.applied = [...applied];
+  const eu = ds.matches.filter((m) => m.method === 'eu' && m.value != null).sort((a, b) => a.euRank - b.euRank)[0];
+  state.eu = eu ? { label: String(eu.label).trim(), value: eu.value } : null;
   ds.lastStats = {
     matched: ds.matches.filter((m) => m.id).length,
     fuzzy: ds.matches.filter((m) => m.method === 'fuzzy').length,
-    unmatched: ds.matches.filter((m) => !m.id && m.method !== 'ignored' && m.method !== 'empty').length,
+    unmatched: ds.matches.filter((m) => !m.id && !['ignored', 'empty', 'eu'].includes(m.method)).length,
     ignored: ds.matches.filter((m) => m.method === 'ignored').length,
     noValue: ds.matches.filter((m) => m.id && m.value == null).length,
   };
@@ -398,6 +403,7 @@ function renderDatasetPanel() {
   if (s.fuzzy) pill('warn', `${s.fuzzy} guessed`);
   if (s.unmatched) pill('bad', `${s.unmatched} unmatched`);
   if (s.ignored) pill('', `${s.ignored} ignored`);
+  if (state.eu) pill('ok', `EU average ${fmt()(state.eu.value)}`);
   if (s.noValue) pill('warn', `${s.noValue} without value`);
   if (ds.dupes.size) pill('warn', `${ds.dupes.size} duplicate`);
   const toggle = document.createElement('button');
@@ -410,11 +416,11 @@ function renderDatasetPanel() {
   list.innerHTML = '';
   const order = { none: 0, fuzzy: 1, ignored: 3 };
   const rows = ds.matches.map((m, i) => ({ ...m, i }))
-    .filter((m) => m.method !== 'empty' && (showAllRows || !m.id || m.method === 'fuzzy' || ds.dupes.has(m.id) || m.value == null) && (showAllRows || m.method !== 'ignored'))
+    .filter((m) => m.method !== 'empty' && (showAllRows || (m.method !== 'eu' && (!m.id || m.method === 'fuzzy' || ds.dupes.has(m.id) || m.value == null))) && (showAllRows || m.method !== 'ignored'))
     .sort((a, b) => (order[a.method] ?? 2) - (order[b.method] ?? 2));
   for (const m of rows) {
     const row = document.createElement('div');
-    const issue = !m.id && m.method !== 'ignored';
+    const issue = !m.id && m.method !== 'ignored' && m.method !== 'eu';
     row.className = `match ${issue ? 'bad' : m.method === 'fuzzy' || ds.dupes.has(m.id) || (m.id && m.value == null) ? 'warn' : ''}`;
     const src = document.createElement('div');
     src.className = 'src';
@@ -423,7 +429,7 @@ function renderDatasetPanel() {
     const note = document.createElement('small');
     note.textContent = [
       m.value == null ? 'no numeric value' : fmt()(m.value),
-      m.method === 'fuzzy' ? 'guessed' : m.method === 'manual' ? 'set by you' : m.method === 'learned' ? 'remembered' : '',
+      m.method === 'eu' ? 'EU average' : m.method === 'fuzzy' ? 'guessed' : m.method === 'manual' ? 'set by you' : m.method === 'learned' ? 'remembered' : '',
       m.id && ds.dupes.has(m.id) ? 'duplicate country' : '',
     ].filter(Boolean).join(' · ');
     src.appendChild(note);
@@ -464,6 +470,7 @@ $('valueCol').onchange = (e) => { state.dataset.valueCol = e.target.value; apply
 $('removeDataset').onclick = () => {
   for (const id of state.dataset.applied || []) delete state.values[id];
   state.dataset = null;
+  state.eu = null;
   save();
   renderDatasetPanel();
   renderMap();
@@ -492,6 +499,7 @@ $('clearData').onclick = () => {
   if (!confirm('Remove all values from the map?')) return;
   state.values = {};
   state.dataset = null;
+  state.eu = null;
   save();
   renderDatasetPanel();
   renderMap();

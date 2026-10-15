@@ -1,0 +1,8 @@
+/* Bar chart page. Reuses the card layout of the voting results page (votes.css). */
+.bars-stage { background: repeating-conic-gradient(#f1f4f8 0 25%, #ffffff 0 50%) 0 0 / 16px 16px; }
+.bars-stage svg { max-width: 1200px; }
+.bars-stage [data-id] { cursor: pointer; }
+.bars-stage rect[data-id]:hover { opacity: .85; }
+.colors-grid input[type=color] { height: 32px; }
+#dataStatus { margin: 0; line-height: 1.5; }
+#euNote { margin: 0; }
