@@ -4,6 +4,8 @@ A small infographic studio. Tabs at the top of the sidebar switch between tools:
 
 - **EU map**: choropleth maps of Europe. Import a CSV (or type values in),
   pick a multi-color gradient, and download the map as SVG (or PNG).
+- **Bar chart**: the EU map's data as a bar chart of the 27 EU member states, with an
+  EU average bar and optional flags instead of country names. Downloadable as SVG or PNG.
 - **Voting results**: European Parliament roll-call votes as For/Against bars per
   political group, downloadable as SVG.
 
@@ -45,6 +47,19 @@ Everything (map data included) is bundled, so it runs offline.
 
 Settings and data are saved in the browser (localStorage), so they survive a reload.
 “Reset all settings” at the bottom of the sidebar clears them.
+
+## Bar chart
+
+- Uses the values from the **EU map** tab (CSV import or typed values) and shows all 27 EU
+  member states; countries without a value appear as "n/a" or can be left out.
+- **EU average**: a CSV row named like `EU`, `EU27`, `EU27_2020` or `European Union - 27
+  countries (from 2020)` is recognised on import (the map lists it as "EU average" instead of
+  unmatched) and drawn as a separate bar. You can also type the value by hand.
+- **Flags**: tick "Show flags instead of country names". Flags are bundled in
+  `src/bars/flags/` ([flag-icons](https://github.com/lipis/flag-icons), MIT) and embedded in
+  the exported SVG, so everything works offline.
+- Vertical or horizontal bars, sorting, value labels, axis/grid, an EU average line, one bar
+  colour or the map's colour scale, and click a bar to highlight a country.
 
 ## Voting results
 
@@ -91,7 +106,9 @@ npm run build:geo
 
 ```
 index.html            EU map page: sidebar + map layout
+bars.html             Bar chart page
 votes.html            Voting results page
+src/bars/             EU27 bar chart, bundled flags and SVG export
 src/main.js           app state, UI wiring, CSV import, map interaction
 src/votes/            roll-call XML parsing, bar chart and SVG export
 src/matching.js       country-name matching and number parsing

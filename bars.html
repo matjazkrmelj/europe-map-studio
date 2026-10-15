@@ -1,0 +1,171 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Bar chart · Infographic Studio</title>
+    <link rel="icon" href="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'%3E%3Crect width='32' height='32' rx='7' fill='%232563eb'/%3E%3Cpath d='M8 21l5-9 4 6 3-4 4 7z' fill='white'/%3E%3C/svg%3E" />
+  </head>
+  <body class="votes-page bars-page">
+    <aside id="sidebar">
+      <header class="brand">
+        <div class="logo"></div>
+        <div>
+          <h1>Infographic Studio</h1>
+          <p class="muted">EU27 bar chart from your map data</p>
+        </div>
+      </header>
+      <nav class="app-tabs" aria-label="Infographics">
+        <a href="./">EU map</a>
+        <a href="./bars.html" aria-current="page">Bar chart</a>
+        <a href="./votes.html">Voting results</a>
+      </nav>
+
+      <!-- DATA -->
+      <details class="section" open>
+        <summary>Data</summary>
+        <div class="body">
+          <p class="small" id="dataStatus"></p>
+          <p class="muted small">Values come from the EU map tab. Import a CSV or type values there and this chart updates.</p>
+          <label>Countries without a value
+            <select id="missing">
+              <option value="show">Show with “n/a”</option>
+              <option value="hide">Leave out</option>
+            </select>
+          </label>
+
+          <h3>EU average</h3>
+          <label class="check"><input type="checkbox" id="euShow" /> Show EU average bar</label>
+          <div class="grid2">
+            <label>Value<input type="text" inputmode="decimal" id="euValue" placeholder="none" autocomplete="off" /></label>
+            <label>Bar label<input type="text" id="euLabel" placeholder="EU" /></label>
+          </div>
+          <p class="muted small" id="euNote"></p>
+          <div class="grid2">
+            <label>Position
+              <select id="euPos">
+                <option value="first">First, set apart</option>
+                <option value="order">In sorted order</option>
+                <option value="last">Last, set apart</option>
+              </select>
+            </label>
+            <label class="check pad-top"><input type="checkbox" id="avgLine" /> Average line</label>
+          </div>
+        </div>
+      </details>
+
+      <!-- CHART -->
+      <details class="section" open>
+        <summary>Bars &amp; labels</summary>
+        <div class="body">
+          <div class="grid2">
+            <label>Layout
+              <select id="orient">
+                <option value="v">Vertical columns</option>
+                <option value="h">Horizontal bars</option>
+              </select>
+            </label>
+            <label>Sort
+              <select id="sort">
+                <option value="desc">Highest first</option>
+                <option value="asc">Lowest first</option>
+                <option value="name">A to Z</option>
+              </select>
+            </label>
+          </div>
+          <label class="check"><input type="checkbox" id="flags" /> Show flags instead of country names</label>
+          <label id="nameStyleWrap">Country names
+            <select id="nameStyle">
+              <option value="name">Full names</option>
+              <option value="code">Two-letter codes</option>
+            </select>
+          </label>
+          <label class="check"><input type="checkbox" id="valueLabels" /> Values on the bars</label>
+          <label class="check"><input type="checkbox" id="grid" /> Axis and grid lines</label>
+          <p class="muted small">Click a bar in the preview to highlight that country. Number format follows the map's legend settings.</p>
+        </div>
+      </details>
+
+      <!-- COLOURS -->
+      <details class="section" open>
+        <summary>Colours &amp; text</summary>
+        <div class="body">
+          <label>Bar colours
+            <select id="colorMode">
+              <option value="single">One colour</option>
+              <option value="map">Same colours as the map</option>
+            </select>
+          </label>
+          <div class="grid3 colors-grid">
+            <label id="barColorWrap">Bars<input type="color" id="barColor" /></label>
+            <label>EU bar<input type="color" id="euColor" /></label>
+            <label>Highlight<input type="color" id="hiColor" /></label>
+          </div>
+          <div class="grid2">
+            <label>Text<input type="color" id="textColor" /></label>
+            <label>Font
+              <select id="font">
+                <option value="inter">Inter / system</option>
+                <option value="gilroy">Gilroy</option>
+              </select>
+            </label>
+          </div>
+          <label>Title<input type="text" id="title" placeholder="Chart title" /></label>
+          <label>Subtitle<input type="text" id="subtitle" placeholder="e.g. 2023, EU27 = 100" /></label>
+          <label>Source note<input type="text" id="source" placeholder="e.g. Source: Eurostat" /></label>
+          <div><button type="button" class="link" id="highlightClear">Clear highlighted countries</button></div>
+        </div>
+      </details>
+
+      <!-- EXPORT -->
+      <details class="section" open>
+        <summary>Export &amp; download</summary>
+        <div class="body">
+          <div class="grid2">
+            <label>Width (px)<input type="number" id="exWidth" min="300" max="8000" step="10" /></label>
+            <label>Height (px)<input type="number" id="exHeight" min="300" max="8000" step="10" /></label>
+          </div>
+          <div class="grid2">
+            <label>Background
+              <select id="exBg">
+                <option value="white">White</option>
+                <option value="none">Transparent</option>
+              </select>
+            </label>
+            <label>File name<input type="text" id="exFile" /></label>
+          </div>
+          <div class="row gap">
+            <button id="dlSvg" class="primary">Download SVG</button>
+            <button id="dlPng" class="ghost">PNG</button>
+          </div>
+          <p class="muted small">Flags are embedded in the SVG, so the file works offline and opens in Illustrator, Inkscape or Figma.</p>
+        </div>
+      </details>
+
+      <footer class="muted small">
+        Flags: flag-icons (MIT). Settings are saved in this browser.
+        <button id="resetAll" class="link">Reset chart settings</button>
+      </footer>
+    </aside>
+
+    <main id="main">
+      <section class="card">
+        <div class="card-head">
+          <div>
+            <h3>EU27 bar chart</h3>
+            <p id="stageNote"></p>
+          </div>
+          <div class="row gap">
+            <button type="button" id="copy">Copy SVG code</button>
+            <button type="button" class="primary" id="download">Download SVG</button>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="stage bars-stage" id="stage"></div>
+          <p class="v-toast" id="toast" role="status"></p>
+        </div>
+      </section>
+    </main>
+    <script type="module" src="/src/bars/main.js"></script>
+  </body>
+</html>

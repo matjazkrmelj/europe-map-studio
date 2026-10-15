@@ -193,3 +193,15 @@ export function parseNumber(v) {
   if (!Number.isFinite(x)) return null;
   return neg ? -x : x;
 }
+
+/**
+ * EU aggregate rows ("EU", "EU27", "EU27_2020", "European Union - 27 countries (from 2020)", "EU-28").
+ * Returns a rank (lower = preferred: EU27 first) or -1 when the label is not an EU total.
+ */
+export function euAggregateRank(label) {
+  const n = normalize(label);
+  if (!/^(eu|european union)( |$|2)/.test(n) || /euro area|eurozone/.test(n)) return -1;
+  if (/\b(eu ?)?27\b|eu27/.test(n)) return 0;
+  if (/\b(eu ?)?28\b|eu28/.test(n)) return 2;
+  return /^(eu|european union)$/.test(n) || /average|total|countries/.test(n) ? 1 : -1;
+}
