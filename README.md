@@ -55,8 +55,8 @@ Settings and data are saved in the browser (localStorage), so they survive a rel
 - **EU average**: a CSV row named like `EU`, `EU27`, `EU27_2020` or `European Union - 27
   countries (from 2020)` is recognised on import (the map lists it as "EU average" instead of
   unmatched) and drawn as a separate bar. You can also type the value by hand.
-- **Flags**: tick "Show flags instead of country names". Flags are bundled in
-  `src/bars/flags/` ([flag-icons](https://github.com/lipis/flag-icons), MIT) and embedded in
+- **Flags**: tick "Show flags instead of country names", then pick a rectangle or circle shape. Flags are bundled in
+  `src/bars/flags/` (round flags use the square crops in `flags/1x1/`; [flag-icons](https://github.com/lipis/flag-icons), MIT) and embedded in
   the exported SVG, so everything works offline.
 - Vertical or horizontal bars, sorting, value labels, axis/grid, an EU average line, one bar
   colour or the map's colour scale, and click a bar to highlight a country.
