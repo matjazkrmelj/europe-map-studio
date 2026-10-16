@@ -40,15 +40,9 @@ export function buildSvg({ features, values, scale, stops, style, fmt, legend, l
   const defs = svg.append('defs');
   defs.append('clipPath').attr('id', 'map-clip').append('rect').attr('x', mx).attr('y', my).attr('width', mw).attr('height', mh);
   const mapG = svg.append('g').attr('id', 'countries').attr('clip-path', 'url(#map-clip)');
-  drawCountries(mapG, {
-    features, projection, values, scale, style, fmt,
-    labelMode: labels.mode, labelSize: labels.size * Math.max(1, s) * 1.25,
-  });
-  mapG.selectAll('path.country').each(function (f) {
-    d3.select(this).attr('id', f.id).append('title').text(`${f.properties.name}: ${fmt(values[f.id])}`);
-  });
-  mapG.selectAll('path').attr('data-id', null).attr('class', null);
 
+  // Legend first, so floating labels can keep clear of it.
+  const obstacles = [];
   if (ex.legend && legend.position !== 'none') {
     const lg = svg.append('g').attr('id', 'legend');
     const size = drawLegend(lg, { scale, stops, title: legend.title, fmt, style, showNoData: legend.showNoData, width: 300, uid: 'export' });
@@ -57,7 +51,18 @@ export function buildSvg({ features, values, scale, stops, style, fmt, legend, l
     const x = legend.position.includes('r') ? W - margin - lw : margin;
     const y = legend.position.includes('t') ? my + margin : my + mh - margin * 0.6 - lh;
     lg.attr('transform', `translate(${x},${y}) scale(${sc})`);
+    obstacles.push({ x, y, w: lw, h: lh });
   }
+
+  drawCountries(mapG, {
+    features, projection, values, scale, style, fmt,
+    labelMode: labels.mode, labelSize: labels.size * Math.max(1, s) * 1.25,
+    view: { x: mx + 4, y: my + 4, w: mw - 8, h: mh - 8 }, obstacles,
+  });
+  mapG.selectAll('path.country').each(function (f) {
+    d3.select(this).attr('id', f.id).append('title').text(`${f.properties.name}: ${fmt(values[f.id])}`);
+  });
+  mapG.selectAll('path.country').attr('data-id', null).attr('class', null);
 
   const node = svg.node();
   return '<?xml version="1.0" encoding="UTF-8"?>\n' + new XMLSerializer().serializeToString(node);

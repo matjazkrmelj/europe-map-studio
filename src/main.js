@@ -5,7 +5,7 @@ import { feature } from 'topojson-client';
 import topo from './data/europe.topo.json';
 import { createMatcher, normalize, parseNumber, euAggregateRank } from './matching.js';
 import { PRESETS, presetStops, sortStops, gradientAt, cssGradient, buildScale } from './color.js';
-import { makeProjection, EUROPE_FRAME, drawCountries, drawLegend, makeFormatter } from './render.js';
+import { makeProjection, EUROPE_FRAME, drawCountries, drawLabels, drawLegend, makeFormatter } from './render.js';
 import { buildSvg, download, svgToPng } from './export.js';
 import sampleCsv from './data/sample.csv?raw';
 
@@ -103,8 +103,8 @@ const zoom = d3.zoom()
     transform = e.transform;
     zoomLayer.attr('transform', transform);
     closeEditor();
-    // Keep labels a constant size on screen while zooming.
-    countriesG.selectAll('g.labels text').attr('font-size', state.labels.size / transform.k).attr('stroke-width', 2.5 / transform.k);
+    // Re-lay out labels so they keep a constant size on screen and stay clear of each other while zooming.
+    drawLabels(countriesG, labelOpts());
   })
   .on('end', () => renderMap());
 svg.call(zoom).on('dblclick.zoom', null);
@@ -117,31 +117,46 @@ function fitProjection() {
   zoom.extent([[0, 0], [size.width, size.height]]).translateExtent([[-size.width * 0.5, -size.height * 0.5], [size.width * 1.5, size.height * 1.5]]);
 }
 
+// Legend rectangle in screen pixels; labels avoid it.
+let legendRect = null;
+
+// Label options for the current zoom: visible area and legend, both in un-zoomed map units.
+function labelOpts() {
+  const t = transform;
+  const toMap = (r) => ({ x: (r.x - t.x) / t.k, y: (r.y - t.y) / t.k, w: r.w / t.k, h: r.h / t.k });
+  return {
+    features, projection, values: state.values, style: UI_STYLE(), fmt: fmt(),
+    labelMode: state.labels.mode, labelSize: state.labels.size, zoomK: t.k,
+    view: toMap({ x: 4, y: 4, w: size.width - 8, h: size.height - 8 }),
+    obstacles: legendRect ? [toMap(legendRect)] : [],
+  };
+}
+
 function renderMap() {
   const scale = currentScale();
   const f = fmt();
   const style = UI_STYLE();
   svg.style('background', style.sea);
-  drawCountries(countriesG, {
-    features, projection, values: state.values, scale, style, fmt: f,
-    labelMode: state.labels.mode, labelSize: state.labels.size, zoomK: transform.k,
-  });
-  countriesG.selectAll('path.country')
-    .attr('vector-effect', 'non-scaling-stroke')
-    .attr('stroke-width', style.borderWidth)
-    .classed('selected', (d) => d.id === selectedId);
-  countriesG.select('path.country.selected').raise();
-  countriesG.select('g.labels').raise();
 
   if (state.legend.position === 'none') {
     legendG.selectAll('*').remove();
+    legendRect = null;
   } else {
     const ls = drawLegend(legendG, { scale, stops: state.stops, title: state.legend.title, fmt: f, style, showNoData: state.legend.showNoData, width: 240, uid: 'screen' });
     const m = 14;
     const x = state.legend.position.includes('r') ? size.width - m - ls.width - 44 : m;
     const y = state.legend.position.includes('t') ? m : size.height - m - ls.height;
     legendG.attr('transform', `translate(${x},${y})`);
+    legendRect = { x, y, w: ls.width, h: ls.height };
   }
+
+  drawCountries(countriesG, { ...labelOpts(), scale });
+  countriesG.selectAll('path.country')
+    .attr('vector-effect', 'non-scaling-stroke')
+    .attr('stroke-width', style.borderWidth)
+    .classed('selected', (d) => d.id === selectedId);
+  countriesG.select('path.country.selected').raise();
+  countriesG.select('g.labels').raise();
   renderStats(f);
   updateCountrySwatches(scale);
 }
