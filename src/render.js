@@ -1,8 +1,9 @@
 // Drawing shared by the on-screen map and the SVG/PNG export.
 import * as d3 from 'd3';
 
-// Lambert azimuthal equal-area centred on Europe (the projection Eurostat uses, EPSG:3035).
-export const makeProjection = () => d3.geoAzimuthalEqualArea().rotate([-10, -52]).clipAngle(120);
+// Europe cropped from the standard world map (Web Mercator, as in Google Maps / OpenStreetMap):
+// north is straight up, parallels are horizontal and country shapes are true to form.
+export const makeProjection = () => d3.geoMercator();
 
 // The area every "full view" is fitted to: roughly Iceland to the Caucasus, Crete/Cyprus to North Cape.
 const EXTENT = { w: -24, e: 42, s: 34, n: 71.5 };
