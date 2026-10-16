@@ -20,12 +20,11 @@ const EU27 = [
 
 // Flags (flag-icons, MIT) are bundled and embedded as data URIs, so exports work offline
 // and the flags' internal ids can't clash with each other.
-const flagFiles = import.meta.glob('./flags/*.svg', { query: '?raw', import: 'default', eager: true });
-const FLAGS = {};
-for (const [path, svg] of Object.entries(flagFiles)) {
-  const code = path.match(/(\w+)\.svg$/)[1];
-  FLAGS[code] = `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`;
-}
+// flags/ holds the 4:3 flags, flags/1x1/ the square crops used for round flags.
+const toDataUri = (files) => Object.fromEntries(Object.entries(files).map(([path, svg]) =>
+  [path.match(/(\w+)\.svg$/)[1], `data:image/svg+xml;base64,${btoa(unescape(encodeURIComponent(svg)))}`]));
+const FLAGS = toDataUri(import.meta.glob('./flags/*.svg', { query: '?raw', import: 'default', eager: true }));
+const FLAGS_ROUND = toDataUri(import.meta.glob('./flags/1x1/*.svg', { query: '?raw', import: 'default', eager: true }));
 
 const MAP_KEY = 'europe-map-studio-v1';
 const LS_KEY = 'europe-map-studio-bars-v1';
@@ -34,7 +33,7 @@ const $ = (id) => document.getElementById(id);
 const defaults = () => ({
   missing: 'show',
   euShow: true, euValue: null, euLabel: 'EU', euPos: 'first', avgLine: false,
-  orient: 'v', sort: 'desc', flags: true, nameStyle: 'name', valueLabels: true, grid: false,
+  orient: 'v', sort: 'desc', flags: true, flagShape: 'rect', nameStyle: 'name', valueLabels: true, grid: false,
   colorMode: 'single', barColor: '#2563eb', euColor: '#f59e0b', hiColor: '#0f172a', textColor: '#1c2430', font: 'inter',
   title: null, subtitle: '', source: '',
   highlight: [],
@@ -171,11 +170,14 @@ function buildSVG() {
   const value = d3.scaleLinear().domain([lo, hi]).nice();
   const ticks = value.ticks(5);
   const tickFmt = makeFormatter({ ...map.legend, decimals: d3.precisionFixed(ticks[1] - ticks[0] || 1) });
+  const round = settings.flagShape === 'circle';
+  // Flag box for a given height: 4:3 rectangle, or a circle of that diameter.
+  const flagWidth = (h) => (round ? h : h * 4 / 3);
   const flag = (d, x, y, w, h) => {
     const cid = `flag-${d.key}`;
-    const r = Math.max(1, Math.min(w, h) * 0.08);
+    const r = round ? w / 2 : Math.max(1, Math.min(w, h) * 0.08);
     defs.push(`<clipPath id="${cid}"><rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="${r.toFixed(1)}"/></clipPath>`);
-    return `<g data-id="${d.id}"><title>${esc(d.name)}</title><image xlink:href="${FLAGS[d.iso2]}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" preserveAspectRatio="none" clip-path="url(#${cid})"/>`
+    return `<g data-id="${d.id}"><title>${esc(d.name)}</title><image xlink:href="${(round ? FLAGS_ROUND : FLAGS)[d.iso2]}" x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" preserveAspectRatio="none" clip-path="url(#${cid})"/>`
       + `<rect x="${x.toFixed(1)}" y="${y.toFixed(1)}" width="${w.toFixed(1)}" height="${h.toFixed(1)}" rx="${r.toFixed(1)}" fill="none" stroke="#000000" stroke-opacity="0.15" stroke-width="${Math.max(0.5, s)}"/></g>`;
   };
   const label = (d) => (settings.nameStyle === 'code' && !d.isEu ? d.code : d.name);
@@ -196,8 +198,8 @@ function buildSVG() {
     let labelH;
     let flagW;
     if (settings.flags) {
-      flagW = Math.min(bw, 64 * s);
-      labelH = flagW * 0.75 + 12 * s;
+      flagW = Math.min(bw, (round ? 48 : 64) * s);
+      labelH = (round ? flagW : flagW * 0.75) + 12 * s;
     } else if (settings.nameStyle === 'code') {
       lfs = Math.min(18 * s, bw * 0.55);
       labelH = lfs * 1.8;
@@ -234,7 +236,7 @@ function buildSVG() {
         }
       }
       const ly = y.range()[0] + (lo < 0 && settings.valueLabels ? valueH : 0) + 10 * s;
-      if (settings.flags) out.push(flag(d, cx - flagW / 2, ly, flagW, flagW * 0.75));
+      if (settings.flags) out.push(flag(d, cx - flagW / 2, ly, flagW, round ? flagW : flagW * 0.75));
       else if (settings.nameStyle === 'code' || d.isEu && !settings.flags && textW(label(d), lfs) < bw) {
         out.push(`<text x="${cx.toFixed(1)}" y="${(ly + lfs * 0.9).toFixed(1)}" font-size="${lfs.toFixed(1)}" ${font(d.isEu ? 'value' : 'label')} fill="${ink}" text-anchor="middle">${esc(label(d))}</text>`);
       } else {
@@ -251,7 +253,7 @@ function buildSVG() {
     let flagH;
     if (settings.flags) {
       flagH = Math.min(bh, 40 * s);
-      labelW = flagH * 4 / 3 + 14 * s;
+      labelW = flagWidth(flagH) + 14 * s;
     } else {
       labelW = d3.max(bars, (d) => textW(label(d), lfs)) + 14 * s;
     }
@@ -274,7 +276,7 @@ function buildSVG() {
       const cy = yb + bh / 2;
       // Labels sit left of the plot (left of the negative value labels too).
       const lx = pad + labelW - 14 * s;
-      if (settings.flags) out.push(flag(d, lx + 14 * s - labelW, cy - flagH / 2, flagH * 4 / 3, flagH));
+      if (settings.flags) out.push(flag(d, lx + 14 * s - labelW, cy - flagH / 2, flagWidth(flagH), flagH));
       else out.push(`<text x="${lx.toFixed(1)}" y="${(cy + lfs * 0.35).toFixed(1)}" font-size="${lfs.toFixed(1)}" ${font(d.isEu ? 'value' : 'label')} fill="${ink}" text-anchor="end">${esc(label(d))}</text>`);
       if (d.value == null) {
         out.push(`<text x="${(x0 + 8 * s).toFixed(1)}" y="${(cy + 5 * s).toFixed(1)}" font-size="${Math.min(14 * s, bh * 0.6)}" ${font('label')} fill="${muted}">n/a</text>`);
@@ -322,12 +324,13 @@ function render() {
       : 'No EU row (EU, EU27, EU27_2020…) in the data. Type a value to add the bar.';
   $('stageNote').textContent = `${settings.ex.width} × ${settings.ex.height} px · ${settings.ex.background === 'none' ? 'transparent' : 'white'} background`;
   $('nameStyleWrap').hidden = settings.flags;
+  $('flagShapeWrap').hidden = !settings.flags;
   $('barColorWrap').style.visibility = settings.colorMode === 'map' ? 'hidden' : '';
 }
 
 const BIND = {
   missing: 'value', euShow: 'checked', euLabel: 'value', euPos: 'value', avgLine: 'checked',
-  orient: 'value', sort: 'value', flags: 'checked', nameStyle: 'value', valueLabels: 'checked', grid: 'checked',
+  orient: 'value', sort: 'value', flags: 'checked', flagShape: 'value', nameStyle: 'value', valueLabels: 'checked', grid: 'checked',
   colorMode: 'value', barColor: 'value', euColor: 'value', hiColor: 'value', textColor: 'value', font: 'value',
   subtitle: 'value', source: 'value',
 };
