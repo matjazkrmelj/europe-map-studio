@@ -41,6 +41,10 @@ Everything (map data included) is bundled, so it runs offline.
   hex values, reverse or space them evenly. Choose a continuous scale or classes
   (equal interval / quantile), fixed or data-driven range, legend title, unit prefix/suffix
   and decimals.
+- **Labels**: names, values or both, at any size. A label sits inside its country when it
+  fits; otherwise (Malta, Luxembourg, Cyprus, or any country once the labels get big) it
+  floats next to it with an arrow pointing at the country, keeping clear of other labels, the
+  legend and the map edge. Labels are laid out again as you zoom, and exports use the same layout.
 - **Export & download**: pixel size, whole Europe or current zoom,
   background, legend on/off, file name → **Download SVG** (vector, editable in Illustrator,
   Inkscape or Figma) or PNG.
