@@ -1,5 +1,5 @@
 import * as d3 from 'd3';
-import { makeProjection, EUROPE_FRAME, drawCountries, drawLegend } from './render.js';
+import { makeProjection, EUROPE_FRAME, WORLD_FRAME, drawCountries, drawLegend } from './render.js';
 
 /**
  * Builds a standalone SVG document string.
@@ -34,7 +34,7 @@ export function buildSvg({ features, values, scale, stops, style, fmt, legend, l
     const [tx, ty] = view.projection.translate();
     projection.scale(view.projection.scale() * k).translate([(tx - rx) * k + ox, (ty - ry) * k + oy]);
   } else {
-    projection.fitExtent([[mx + margin, my + margin * 0.5], [mx + mw - margin, my + mh - margin * 0.5]], EUROPE_FRAME);
+    projection.fitExtent([[mx + margin, my + margin * 0.5], [mx + mw - margin, my + mh - margin * 0.5]], ex.view === 'world' ? WORLD_FRAME : EUROPE_FRAME);
   }
 
   const defs = svg.append('defs');

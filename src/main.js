@@ -5,7 +5,7 @@ import { feature } from 'topojson-client';
 import topo from './data/europe.topo.json';
 import { createMatcher, normalize, parseNumber, euAggregateRank } from './matching.js';
 import { PRESETS, presetStops, sortStops, gradientAt, cssGradient, buildScale } from './color.js';
-import { makeProjection, EUROPE_FRAME, drawCountries, drawLabels, drawLegend, makeFormatter } from './render.js';
+import { makeProjection, EUROPE_FRAME, WORLD_FRAME, drawCountries, drawLabels, drawLegend, makeFormatter } from './render.js';
 import { buildSvg, download, svgToPng } from './export.js';
 import sampleCsv from './data/sample.csv?raw';
 
@@ -98,7 +98,6 @@ let transform = d3.zoomIdentity;
 let selectedId = null;
 
 const zoom = d3.zoom()
-  .scaleExtent([1, 14])
   .on('zoom', (e) => {
     transform = e.transform;
     zoomLayer.attr('transform', transform);
@@ -114,7 +113,12 @@ function fitProjection() {
   size = { width: Math.max(200, r.width), height: Math.max(200, r.height) };
   svg.attr('viewBox', `0 0 ${size.width} ${size.height}`);
   projection = makeProjection().fitExtent([[20, 20], [size.width - 20, size.height - 20]], EUROPE_FRAME);
-  zoom.extent([[0, 0], [size.width, size.height]]).translateExtent([[-size.width * 0.5, -size.height * 0.5], [size.width * 1.5, size.height * 1.5]]);
+  // Europe is the starting view; zooming out reaches the whole world, and panning stops at its edges.
+  const [[wx0, wy0], [wx1, wy1]] = d3.geoPath(projection).bounds(WORLD_FRAME);
+  const kMin = Math.min(1, size.width / (wx1 - wx0), size.height / (wy1 - wy0));
+  const padX = size.width / kMin - (wx1 - wx0), padY = size.height / kMin - (wy1 - wy0);
+  zoom.extent([[0, 0], [size.width, size.height]]).scaleExtent([kMin, 14])
+    .translateExtent([[wx0 - Math.max(0, padX) / 2, wy0 - Math.max(0, padY) / 2], [wx1 + Math.max(0, padX) / 2, wy1 + Math.max(0, padY) / 2]]);
 }
 
 // Legend rectangle in screen pixels; labels avoid it.
