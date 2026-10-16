@@ -96,8 +96,10 @@ Borders come from [Natural Earth](https://www.naturalearthdata.com/) 1:10m admin
 countries, current master (v5.1.x / 5.2-pre), **German/EU point-of-view edition**:
 Kosovo shown as a country, Cyprus undivided, Crimea as part of Ukraine, North Macedonia,
 Czechia and Türkiye named as they are today. The prepared file is `src/data/europe.topo.json`.
-The map is Europe cropped from the standard world map projection (Web Mercator, as in
-Google Maps / OpenStreetMap), so country shapes look the way people know them.
+The file holds every country in the world (full 1:10m detail around Europe, simplified
+elsewhere). The map uses the standard world map projection (Web Mercator, as in Google Maps /
+OpenStreetMap) and opens on Europe; zoom out to see the whole world, or pick
+**Whole world** as the export area.
 
 To regenerate it (e.g. after a new Natural Earth release):
 

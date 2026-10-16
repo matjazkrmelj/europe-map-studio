@@ -15,6 +15,12 @@ export const EUROPE_FRAME = {
   ],
 };
 
+// The whole world, without the polar regions that the world map projection blows up.
+export const WORLD_FRAME = {
+  type: 'MultiPoint',
+  coordinates: [[-180, -58], [180, -58], [-180, 84], [180, 84]],
+};
+
 export function makeFormatter({ decimals = 1, prefix = '', suffix = '', thousands = true }) {
   const f = d3.format(`${thousands ? ',' : ''}.${Math.max(0, Math.min(6, decimals | 0))}f`);
   return (v) => (v == null || !Number.isFinite(v) ? '–' : `${prefix}${f(v)}${suffix}`);
